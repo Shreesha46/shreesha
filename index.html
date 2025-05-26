@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>e-Library | Read Engineering Books</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f6f9;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    header {
+      background-color: #0a58ca;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    nav {
+      background-color: #ffffff;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    nav a {
+      color: #0a58ca;
+      text-decoration: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+
+    input, textarea, button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    button {
+      background-color: #0a58ca;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #084298;
+    }
+
+    .book-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .book-list li {
+      background-color: #e9f1ff;
+      margin-bottom: 10px;
+      padding: 15px;
+      border-radius: 5px;
+    }
+
+    .book-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .delete-btn {
+      background-color: #dc3545;
+      padding: 6px 12px;
+      font-size: 14px;
+      border: none;
+      border-radius: 4px;
+      color: white;
+      cursor: pointer;
+      margin-left: 5px;
+    }
+
+    .delete-btn:hover {
+      background-color: #a71d2a;
+    }
+
+    .open-btn {
+      background-color: #28a745;
+      padding: 6px 12px;
+      font-size: 14px;
+      border: none;
+      border-radius: 4px;
+      color: white;
+      cursor: pointer;
+    }
+
+    .open-btn:hover {
+      background-color: #1e7e34;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>📚 e-Library</h1>
+    <p>Add, view, and read engineering books</p>
+  </header>
+
+  <nav>
+    <a onclick="showPage('home')">Home</a>
+    <a onclick="showPage('add')">Add Book</a>
+    <a onclick="showPage('list')">View Books</a>
+  </nav>
+
+  <!-- Home -->
+  <div class="container" id="homePage">
+    <h2>Welcome to your personal e-Library</h2>
+    <p>This e-Library stores and displays book contents right in your browser. First-year engineering textbooks are preloaded.</p>
+  </div>
+
+  <!-- Add Book -->
+  <div class="container" id="addPage" style="display:none;">
+    <h2>Add a New Book</h2>
+    <form id="bookForm">
+      <input type="text" id="title" placeholder="Book Title" required>
+      <input type="text" id="author" placeholder="Author Name" required>
+      <textarea id="content" placeholder="Paste book content or summary..." required></textarea>
+      <button type="submit">Add Book</button>
+    </form>
+  </div>
+
+  <!-- Book List -->
+  <div class="container" id="listPage" style="display:none;">
+    <h2>Books in Your Library</h2>
+    <ul id="bookList" class="book-list"></ul>
+  </div>
+
+  <script>
+    // Preload default books (if first time)
+    function preloadBooks() {
+      if (!localStorage.getItem("books")) {
+        const books = [
+          {
+            title: "Engineering Mathematics - I",
+            author: "B.S. Grewal",
+            content: "This book covers linear algebra, differential calculus, integral calculus and applications."
+          },
+          {
+            title: "Basic Electrical Engineering",
+            author: "D.P. Kothari",
+            content: "DC/AC circuits, electromagnetic theory, electrical machines, and power systems basics."
+          },
+          {
+            title: "Engineering Physics",
+            author: "M.N. Avadhanulu",
+            content: "Topics include optics, quantum mechanics, lasers, fiber optics, and solid state physics."
+          }
+        ];
+        localStorage.setItem("books", JSON.stringify(books));
+      }
+    }
+
+    function getBooks() {
+      return JSON.parse(localStorage.getItem("books")) || [];
+    }
+
+    function saveBook(book) {
+      const books = getBooks();
+      books.push(book);
+      localStorage.setItem("books", JSON.stringify(books));
+    }
+
+    function deleteBook(index) {
+      const books = getBooks();
+      books.splice(index, 1);
+      localStorage.setItem("books", JSON.stringify(books));
+      displayBooks();
+    }
+
+    function openBook(index) {
+      const books = getBooks();
+      const book = books[index];
+      const newTab = window.open();
+      const contentHTML = `
+        <html>
+          <head>
+            <title>${book.title} | e-Library</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 40px; background: #f4f4f4; color: #333; }
+              h1 { color: #0a58ca; }
+              .content { white-space: pre-wrap; margin-top: 20px; background: white; padding: 20px; border-radius: 6px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+            </style>
+          </head>
+          <body>
+            <h1>${book.title}</h1>
+            <h3>by ${book.author}</h3>
+            <div class="content">${book.content.replace(/\n/g, "<br>")}</div>
+          </body>
+        </html>
+      `;
+      newTab.document.write(contentHTML);
+      newTab.document.close();
+    }
+
+    function displayBooks() {
+      const books = getBooks();
+      const list = document.getElementById("bookList");
+      list.innerHTML = "";
+
+      if (books.length === 0) {
+        list.innerHTML = "<li>No books found.</li>";
+        return;
+      }
+
+      books.forEach((book, index) => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <div class="book-header">
+            <div>
+              <strong>${book.title}</strong><br>by ${book.author}
+            </div>
+            <div>
+              <button class="delete-btn" onclick="deleteBook(${index})">Delete</button>
+              <button class="open-btn" onclick="openBook(${index})">Open</button>
+            </div>
+          </div>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    document.getElementById("bookForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const title = document.getElementById("title").value.trim();
+      const author = document.getElementById("author").value.trim();
+      const content = document.getElementById("content").value.trim();
+
+      if (title && author && content) {
+        saveBook({ title, author, content });
+        alert("✅ Book added successfully!");
+        document.getElementById("bookForm").reset();
+        showPage("list");
+        displayBooks();
+      }
+    });
+
+    function showPage(page) {
+      document.getElementById("homePage").style.display = "none";
+      document.getElementById("addPage").style.display = "none";
+      document.getElementById("listPage").style.display = "none";
+
+      if (page === "home") document.getElementById("homePage").style.display = "block";
+      if (page === "add") document.getElementById("addPage").style.display = "block";
+      if (page === "list") {
+        document.getElementById("listPage").style.display = "block";
+        displayBooks();
+      }
+    }
+
+    preloadBooks();
+    showPage("home");
+  </script>
+
+</body>
+</html>
